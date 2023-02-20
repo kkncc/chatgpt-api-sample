@@ -19,7 +19,7 @@ services:
     ports:
       - "443:443"
     #command: '/bin/bash'
-    command: '/usr/sbin/nginx/ && usr/bin/supervisord'
+    command: '/usr/sbin/nginx && usr/bin/supervisord'
   redis:
     image: "redis:alpine"
     container_name: tc_redis
