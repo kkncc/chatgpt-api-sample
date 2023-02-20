@@ -1,0 +1,18 @@
+##ignore this file##
+__MACOSX/
+logs/
+__pycache__/
+data/
+!config/
+config/*
+!config/sample-conf.ini
+.idea/
+.project
+.settings
+*.DS_Store
+*.txt
+*.iml
+*.py[cod]
+*.xml
+.python-version
+.vscode

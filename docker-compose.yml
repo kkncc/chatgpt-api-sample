@@ -1,0 +1,28 @@
+version: "3.3"
+networks:
+  squid-test:
+    external: false
+services:
+  web:
+    #restart: always
+    stdin_open: true
+    tty: true
+    networks:
+      - squid-test
+    container_name: chatgpt_service
+    build: .
+    image: nginx-gunicorn-flask:latest
+    volumes:
+      - ./:/app
+      - ./nginx_flask.conf:/etc/nginx/sites-available/nginx_flask.conf
+      - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+    ports:
+      - "443:443"
+    #command: '/bin/bash'
+    command: '/usr/sbin/nginx/ && usr/bin/supervisord'
+  redis:
+    image: "redis:alpine"
+    container_name: tc_redis
+    networks:
+      - squid-test
+    command: redis-server --requirepass tc_redis@Admin
