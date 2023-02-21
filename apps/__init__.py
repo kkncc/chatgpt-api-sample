@@ -19,9 +19,9 @@ GLOBAl_CONFIG.read(APP_ROOT + '/config/conf.ini')
 
 PROJECT_ENV = GLOBAl_CONFIG['main']['env']
 
-os.environ['dev'] = APP_ROOT + '/config/dev-conf.ini'
+# os.environ['dev'] = APP_ROOT + '/config/dev-conf.ini'
 # os.environ['uat'] = APP_ROOT + '/config/uat-conf.ini'
-# os.environ['prod'] = APP_ROOT + '/config/prod-conf.ini'
+os.environ['prod'] = APP_ROOT + '/config/prod-conf.ini'
 
 app = Flask(__name__, static_folder='../static')
 app.config.from_envvar(PROJECT_ENV)
