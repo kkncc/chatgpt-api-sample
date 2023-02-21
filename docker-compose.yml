@@ -16,10 +16,17 @@ services:
       - ./:/app
       - ./nginx_flask.conf:/etc/nginx/sites-available/nginx_flask.conf
       - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+      - /etc/ssl:/etc/ssl
+      - /home/htpasswd:/home/htpasswd
     ports:
       - "443:443"
     #command: '/bin/bash'
-    command: '/usr/sbin/nginx && usr/bin/supervisord'
+    command:
+      - sh
+      - -c
+      - |
+        /usr/bin/supervisord &
+        /usr/sbin/nginx
   redis:
     image: "redis:alpine"
     container_name: tc_redis
