@@ -55,6 +55,8 @@ def before_request():
         remote = request.remote_addr
         while remote not in trusted_proxies:
             abort(403)
+    if request.path.find('api') != -1:
+        log_request()
 
 
 @app.after_request
@@ -78,3 +80,18 @@ def after_request(resp):
             logger.info(json.dumps(logger_info))
     return resp
 
+
+def log_request():
+    ip = pub.get_ip_addr(request)
+    if not request.data:
+        json_data = {}
+    else:
+        json_data = request.get_json()
+    msg_data = json_data.copy()
+    msg_data.pop('password', None)
+    logger_info = {
+        "ip": ip,
+        "data": json.dumps(msg_data)
+    }
+    logger_info = pub.merge_log_info(logger_info)
+    logger.info(json.dumps(logger_info))
