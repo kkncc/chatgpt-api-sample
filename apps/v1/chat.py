@@ -13,18 +13,19 @@ def chat():
         if not verify_data(data=data):
             return jsonify({'code': 1000, "error": "Invalid data."}), 400
         conversation_id = data.get("conversation_id", None)
-        try:
-            response = chatBot.ask(
-                user_request=data["prompt"],
-                conversation_id=conversation_id
-            )
-        except Exception as exc:
-            return jsonify({'code': 1001, "error": str(exc)}), 500
-        data = {
-            "code": 0,
-            "ai_text": response["choices"][0]["text"]
-        }
-        return jsonify(data), 200
+        for i in range(3):
+            try:
+                response = chatBot.ask(
+                    user_request=data["prompt"],
+                    conversation_id=conversation_id
+                )
+                data = {
+                    "code": 0,
+                    "ai_text": response["choices"][0]["text"]
+                }
+                return jsonify(data), 200
+            except Exception as exc:
+                return jsonify({'code': 1001, "error": str(exc)}), 500
     else:
         data = {
             "code": 0,
