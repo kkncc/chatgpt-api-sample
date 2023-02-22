@@ -43,6 +43,10 @@ def chat():
 @app.route('/api/reset', methods=['POST', 'GET'])
 def reset():
     chatBot.reset()
+    data = {
+        "code": 0,
+    }
+    return jsonify(data), 200
 
 
 def verify_data(data: dict) -> bool:
