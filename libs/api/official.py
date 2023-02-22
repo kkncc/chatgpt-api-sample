@@ -2,7 +2,6 @@
 A simple wrapper for the official ChatGPT API
 """
 import argparse
-import json
 import os
 import sys
 
@@ -10,6 +9,7 @@ import openai
 import tiktoken
 
 from apps import app
+from libs.api.conversation import Conversation
 
 ENGINE = os.environ.get("GPT_ENGINE") or app.config.get('GPT_ENGINE')
 
@@ -87,10 +87,6 @@ class ChatBot:
             raise Exception("ChatGPT API returned no choices")
         if completion["choices"][0].get("text") is None:
             raise Exception("ChatGPT API returned no text")
-        completion["choices"][0]["text"] = remove_suffix(
-            completion["choices"][0]["text"],
-            "<|im_end|>",
-        )
         # Add to chat history
         self.prompt.add_to_history(
             user_request,
@@ -144,7 +140,7 @@ class ChatBot:
             self.prompt.construct_prompt(user_request, user=user),
             temperature,
         )
-        return self._process_completion(user_request, completion, user=user)
+        return self._process_completion(user_request, completion, conversation_id=conversation_id, user=user)
 
     def ask_stream(
         self,
@@ -188,7 +184,7 @@ class ChatBot:
         """
         Load a conversation from the conversation history
         """
-        if conversation_id not in self.conversations.conversations:
+        if not self.conversations.check_conversation(conversation_id):
             # Create a new conversation
             self.make_conversation(conversation_id)
         self.prompt.chat_history = self.conversations.get_conversation(conversation_id)
@@ -214,7 +210,7 @@ class Prompt:
             or "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."
             + "\n\n"
             + "Human: Hello, who are you?\n"
-            + "AI: I am an AI created by OpenAI. How can I help you today? <|im_end|>\n"
+            + "AI: I am an AI created by OpenAI. How can I help you today? \n"
         )
         # Track chat history
         self.chat_history: list = []
@@ -242,7 +238,7 @@ class Prompt:
             + "\n"
             + "AI: "
             + response
-            + "<|im_end|>\n",
+            + "\n",
         )
 
     def history(self, custom_history: list = None) -> str:
@@ -281,53 +277,6 @@ class Prompt:
             # Construct prompt again
             prompt = self.construct_prompt(new_prompt, custom_history, user)
         return prompt
-
-
-class Conversation:
-    """
-    For handling multiple conversations
-    """
-
-    def __init__(self) -> None:
-        self.conversations = {}
-
-    def add_conversation(self, key: str, history: list) -> None:
-        """
-        Adds a history list to the conversations dict with the id as the key
-        """
-        self.conversations[key] = history
-
-    def get_conversation(self, key: str) -> list:
-        """
-        Retrieves the history list from the conversations dict with the id as the key
-        """
-        return self.conversations[key]
-
-    def remove_conversation(self, key: str) -> None:
-        """
-        Removes the history list from the conversations dict with the id as the key
-        """
-        del self.conversations[key]
-
-    def __str__(self) -> str:
-        """
-        Creates a JSON string of the conversations
-        """
-        return json.dumps(self.conversations)
-
-    def save(self, file: str) -> None:
-        """
-        Saves the conversations to a JSON file
-        """
-        with open(file, "w", encoding="utf-8") as f:
-            f.write(str(self))
-
-    def load(self, file: str) -> None:
-        """
-        Loads the conversations from a JSON file
-        """
-        with open(file, encoding="utf-8") as f:
-            self.conversations = json.loads(f.read())
 
 
 def main():
