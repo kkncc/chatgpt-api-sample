@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from libs.api.official import ChatBot, Prompt
+from libs.api.turbo import ChatBot, Prompt
 from apps import app
 
 chatBot = ChatBot()
