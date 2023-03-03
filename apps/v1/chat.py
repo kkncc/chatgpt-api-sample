@@ -22,7 +22,7 @@ def chat():
                 )
                 data = {
                     "code": 0,
-                    "ai_text": response["choices"][0]["text"]
+                    "ai_text": response["choices"][0]["message"]["content"]
                 }
                 break
             except Exception as exc:

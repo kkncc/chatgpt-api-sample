@@ -85,7 +85,6 @@ class ChatBot:
             self.prompt.construct_prompt(user_request),
             temperature,
         )
-        print(123123)
         return self._process_completion(user_request, completion, conversation_id=conversation_id)
 
     def make_conversation(self, conversation_id: str) -> None:
