@@ -11,11 +11,14 @@ class Tokens:
         """
         GLOBAL_REDIS_CLIENT.hset("tokens", key, token)
 
-    def get_token(self, key: str) -> list:
+    def get_token(self, key: str) -> int:
         """
         Retrieves the history list from the conversations dict with the id as the key
         """
-        return GLOBAL_REDIS_CLIENT.hget("tokens", key)
+        token = GLOBAL_REDIS_CLIENT.hget("tokens", key)
+        if not token:
+            token = 0
+        return int(token)
 
     def remove_token(self, key: str) -> None:
         """

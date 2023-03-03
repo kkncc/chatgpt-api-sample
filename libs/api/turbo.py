@@ -86,7 +86,6 @@ class ChatBot:
         """
         if conversation_id is not None:
             self.load_conversation(conversation_id)
-            self.token.get_token(conversation_id)
         completion = self._get_completion(
             self.prompt.construct_prompt(user_request),
             temperature,
