@@ -6,6 +6,7 @@ import openai
 
 from apps import app
 from libs.api.conversation import Conversation
+from libs.api.tokens import Tokens
 
 ENGINE = os.environ.get("GPT_ENGINE") or app.config.get('GPT_ENGINE')
 
@@ -30,6 +31,7 @@ class ChatBot:
         self.conversations = Conversation()
         self.prompt = Prompt(buffer=buffer)
         self.engine = engine or ENGINE
+        self.token = Tokens()
 
     def _get_completion(
         self,
@@ -43,6 +45,7 @@ class ChatBot:
         return openai.ChatCompletion.create(
             model=self.engine,
             messages=prompt,
+            max_tokens=self.get_max_tokens(),
             temperature=temperature,
             top_p=1,
             presence_penalty=0.6,
@@ -66,6 +69,8 @@ class ChatBot:
             user_request,
             completion["choices"][0]["message"],
         )
+        print("total_tokens", completion['usage']["total_tokens"])
+        self.prompt.max_tokens = completion['usage']["total_tokens"]
         if conversation_id is not None:
             self.save_conversation(conversation_id)
         return completion
@@ -81,6 +86,7 @@ class ChatBot:
         """
         if conversation_id is not None:
             self.load_conversation(conversation_id)
+            self.token.get_token(conversation_id)
         completion = self._get_completion(
             self.prompt.construct_prompt(user_request),
             temperature,
@@ -114,12 +120,20 @@ class ChatBot:
             # Create a new conversation
             self.make_conversation(conversation_id)
         self.prompt.chat_history = self.conversations.get_conversation(conversation_id)
+        self.prompt.max_tokens = self.token.get_token(conversation_id)
 
     def save_conversation(self, conversation_id) -> None:
         """
         Save a conversation to the conversation history
         """
         self.conversations.add_conversation(conversation_id, self.prompt.chat_history)
+        self.token.add_token(conversation_id, self.prompt.max_tokens)
+
+    def get_max_tokens(self) -> int:
+        """
+        Get the max tokens for a prompt
+        """
+        return 4000 - self.prompt.max_tokens
 
 
 class Prompt:
@@ -137,6 +151,7 @@ class Prompt:
         # Track chat history
         self.chat_history: list = []
         self.buffer = buffer
+        self.max_tokens = 0
 
     def add_to_chat_history(self, user_request: str, response: map) -> None:
         """
@@ -177,4 +192,15 @@ class Prompt:
             "role": "user", "content": new_prompt
         }
         prompt.append(chat_user)
+        if self.buffer is not None:
+            max_tokens = 4000 - self.buffer
+        else:
+            max_tokens = 3200
+        if self.max_tokens > max_tokens:
+            # Remove oldest chat
+            if len(self.chat_history) == 0:
+                return prompt
+            self.chat_history.pop(0)
+            # Construct prompt again
+            prompt = self.construct_prompt(new_prompt, custom_history)
         return prompt
