@@ -1,3 +1,6 @@
+# ChatGPT-API Sample
+OpenAI GPT-3.5 Turbo API.
+
 # Quick Start 
     git clone https://github.com/kkncc/chatgpt-api-sample.git
     cd chatgpt-api-sample/
@@ -7,7 +10,7 @@
     mv sample-conf.ini prod-conf.ini
     
 ### Update api key
-
+    
     OPENAI_API_KEY = 'your openai key'
     
 ## Usage
@@ -23,7 +26,9 @@
     supervisord -c  /etc/supervisor/conf.d/supervisord.conf
     
 ### Docker
-
+#### modify conf.ini file
+    host = redis
+#### run
     docker-compose up
     
      
