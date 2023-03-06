@@ -200,6 +200,7 @@ class Prompt:
             if len(self.chat_history) == 0:
                 return prompt
             self.chat_history.pop(0)
+            self.chat_history.pop(0)
             # Construct prompt again
             prompt = self.construct_prompt(new_prompt, custom_history)
         return prompt
