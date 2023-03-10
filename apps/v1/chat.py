@@ -1,9 +1,10 @@
 from flask import request, jsonify
-from libs.api.turbo import ChatBot, Prompt
+from libs.api.turbo import ChatBot
+from libs.api.image import ImageBot
 from apps import app
 
 chatBot = ChatBot()
-prompt = Prompt()
+imageBot = ImageBot()
 
 
 @app.route('/api/chat', methods=['POST', 'GET'])
@@ -13,17 +14,28 @@ def chat():
         if not verify_data(data=data):
             return jsonify({'code': 1000, "error": "Invalid data."}), 400
         conversation_id = data.get("conversation_id", None)
+        is_image = data.get("image", "")
         status_code = 200
         for _ in range(3):
             try:
-                response = chatBot.ask(
-                    user_request=data["prompt"],
-                    conversation_id=conversation_id
-                )
-                data = {
-                    "code": 0,
-                    "ai_text": response["choices"][0]["message"]["content"]
-                }
+                if is_image == "Y" or "#picture" in data["prompt"]:
+                    response = imageBot.ask(
+                        user_request=data["prompt"],
+                        conversation_id=conversation_id
+                    )
+                    data = {
+                        "code": 0,
+                        "ai_url": response["data"][0]["url"]
+                    }
+                else:
+                    response = chatBot.ask(
+                        user_request=data["prompt"],
+                        conversation_id=conversation_id
+                    )
+                    data = {
+                        "code": 0,
+                        "ai_text": response["choices"][0]["message"]["content"]
+                    }
                 break
             except Exception as exc:
                 data = {
